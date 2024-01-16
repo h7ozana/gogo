@@ -1,0 +1,105 @@
+### 전제조건
+ekscli
+
+
+
+###### 참조 https: //brunch.co.kr/@topasvga/3585
+# EKS 깃 클론, 일부 주석처리
+terraform init
+terraform plan
+terraform apply yes
+
+#config 생성 및 노드, NS 확인(default)
+aws eks --region $(terraform output -raw region) update-kubeconfig --name $(terraform output -raw cluster_name)
+kubectl cluster-info
+kubectl get nodes
+kubectl get namespace
+
+#참고 1 https://velog.io/@junsugi/Argo-CD-%EB%A5%BC-AWS-EKS-%EC%97%90-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0
+#참고 2 https://argo-cd.readthedocs.io/en/stable/getting_started/
+#참고 3 https://blog.naver.com/rkttndk/223225663234
+
+
+# 아르고시작 #참고 2
+kubectl create namespace argocd
+kubectl get namespace
+kubectl apply -n argocd -f https: //raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl get all -n argocd
+
+# ALB설치 시작
+git clone https: //github.com/DNXLabs/terraform-aws-eks-lb-controller
+빼야할까 ? # choco install kubernetes-helm
+#exm eks-1.27맞추기 / 배리어블 tf 숫자맞추기.리전
+
+
+#폴더이동 전에 익스포트 해보고 하자 /git bash
+export KUBE_CONFIG_PATH="/c/Users/soldesk/.kube/config"
+export KUBE_CONFIG_PATH="/c/Users/woo/.kube/config"
+
+빼야할까 ? # helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller --namespace kube-system --set
+clusterName=education-eks-cVKrwBCd --set serviceAccount.create=false --set serviceAccount.name=alb-ingress-controller-sa
+
+terraform init
+terraform plan
+terraform apply yes
+EKS OpenID Connect 공급자 URL
+IAM 자격증명공급자 ARN
+EKS명
+
+
+alb가서 apply이후 실제 생성 확인 및 아래 컨트롤러 확인
+확인되면 www레코드 생성-로밸연결 하고 www대상으로 인증서 보내보기
+#어플라이시 필요한내용
+aws eks describe-cluster --name education-eks-cVKrwBCd --region ap-northeast-2
+
+
+컨트롤러가 설치되어 있는지 확인합니다.
+kubectl get deployment -n kube-system aws-load-balancer-controller
+#미설치시 kubectl get deployment -n kube-system aws-load-balancer-controllereksctl utils install alb-ingress-controller
+--region ap-northeast-2 --cluster education-eks-pe4Qp48L --approve
+
+##파워쉘
+빼야할까 ? #helm repo add eks https: //aws.github.io/eks-charts
+빼야할까 ? #helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller \
+--namespace kube-system \
+--set clusterName=education-eks-pe4Qp48L \
+--set serviceAccount.create=false \
+--set serviceAccount.name=alb-ingress-controller-sa
+
+kubectl apply -f 1.yaml -n default
+kubectl apply -f 2.yaml -n default
+kubectl apply -f 3ingress.yaml -n default
+
+
+
+kubectl get ingress --all-namespaces
+#### kubectl delete ingress -n default 3ingress
+
+# argoCD Cli 설치 windows powershell 실행 #참고3
+# https://nyyang.tistory.com/114 자세한설명
+
+$version = (Invoke-RestMethod https: //api.github.com/repos/argoproj/argo-cd/releases/latest).tag_name
+$url = "https://github.com/argoproj/argo-cd/releases/download/" + $version + "/argocd-windows-amd64.exe"
+$output = "argocd.exe"
+Invoke-WebRequest -Uri $url -OutFile $output
+mv .\argocd.exe C:\Users\Woo\Downloads
+
+#CMD
+cd C:\Users\Woo\Downloads
+argocd
+kubectl port-forward svc/argocd-server -n argocd 8080: 443
+https: //127.0.0.1:8080/
+kubectl describe svc argocd-server -n argocd
+kubectl apply -f argolb.yaml -n argocd
+
+#비밀번호 추출
+
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | ForEach-Object {
+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+
+aws eks create-fargate-profile --cluster-name education-eks-T6et7b8f --fargate-profile-name fartest --selectors
+namespace=fartest --pod-execution-role-arn
+arn:aws:iam::589634832240:oidc-provider/oidc.eks.ap-northeast-2.amazonaws.com/id/EC1628D0256D111C7AE8B43E7344114B
+
+
+kubectl patch svc argocd-server -n argocd -p '{"spec":{"type":"LoadBalancer"}}'
