@@ -1,0 +1,12 @@
+aws eks --region $(terraform output -raw region) update-kubeconfig --name $(terraform output -raw cluster_name)
+kubectl cluster-info
+kubectl get nodes
+kubectl get namespace
+
+#깃배시로
+export KUBE_CONFIG_PATH="/C\Users\soldesk\.kube\config"
+
+컨트롤러가 설치되어 있는지 확인합니다.
+$ kubectl get deployment -n kube-system aws-load-balancer-controller
+
+yaml 다운로두  https://nyyang.tistory.com/95 https://kubernetes.io/docs/concepts/services-networking/ingress/
