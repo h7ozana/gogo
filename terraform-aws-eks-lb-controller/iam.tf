@@ -380,7 +380,7 @@ data "aws_iam_policy_document" "lb_controller_assume" {
 
     principals {
       type        = "Federated"
-      identifiers = [var.cluster_identity_oidc_issuer_arn]
+      identifiers = [var.cluster_identity_oidc_issuer_arn, "eks-fargate-pods.amazonaws.com"]
     }
 
     condition {
