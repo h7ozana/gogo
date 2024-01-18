@@ -112,7 +112,7 @@ resource "aws_eks_addon" "ebs-csi" {
   addon_version = "v1.20.0-eksbuild.1"
 
   timeouts {
-    create = "5m"
+    create = "2m"
   }
 
   service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
